@@ -1,0 +1,117 @@
+<resources>
+    <string name="app_name">Unit Converter</string>
+    <string-array name="fuel_types">
+        <item>A92</item>
+        <item>A92 euro</item>
+        <item>A95</item>
+        <item>A95 euro</item>
+        <item>A80</item>
+        <item>Дизель түлш</item>
+    </string-array>
+    <!-- Force -->
+    <string-array name="force_units">
+        <item>Ньютон</item>
+        <item>Килоньютон</item>
+        <item>Килограмм-хүч</item>
+        <item>Дина</item>
+        <item>Фунт-хүч</item>
+        <item>Меганьютон</item>
+    </string-array>
+
+    <!-- Volume -->
+    <string-array name="volume_units">
+        <item>миллилитр</item>
+        <item>литр</item>
+        <item>сантиметр куб</item>
+        <item>метр куб</item>
+        <item>галлон</item>
+        <item>инч куб</item>
+    </string-array>
+
+    <!-- Time -->
+    <string-array name="time_units">
+        <item>Миллисекунд</item>
+        <item>Секунд</item>
+        <item>Минут</item>
+        <item>Цаг</item>
+        <item>Хоног</item>
+        <item>Жил</item>
+    </string-array>
+
+    <!-- Temperature -->
+    <string-array name="temperature_units">
+        <item>цельс</item>
+        <item>фарангейт</item>
+        <item>келвин</item>
+    </string-array>
+
+    <!-- Speed -->
+    <string-array name="speed_units">
+        <item>Метр/секунд</item>
+        <item>Километр/цаг</item>
+        <item>Миль/цаг</item>
+        <item>Узел</item>
+        <item>Фут/секунд</item>
+        <item>Мах</item>
+    </string-array>
+
+    <!-- Mass -->
+    <string-array name="mass_units">
+        <item>Миллиграмм</item>
+        <item>Грамм</item>
+        <item>Килограмм</item>
+        <item>Центнер</item>
+        <item>Тонн</item>
+        <item>Унци</item>
+    </string-array>
+
+    <!-- Length -->
+    <string-array name="length_units">
+        <item>kilometer</item>
+        <item>meter</item>
+        <item>centimeter</item>
+        <item>millimeter</item>
+        <item>inches</item>
+        <item>feet</item>
+    </string-array>
+
+    <!-- Energy -->
+    <string-array name="energy_units">
+        <item>Жоуль</item>
+        <item>Киложоуль</item>
+        <item>Калори</item>
+        <item>Килокалори</item>
+        <item>Ватт-цаг</item>
+        <item>Киловатт-цаг</item>
+    </string-array>
+
+    <!-- Density -->
+    <string-array name="density_units">
+        <item>Килограмм/куб метр</item>
+        <item>Грамм/куб сантиметр</item>
+        <item>Грамм/миллилитр</item>
+        <item>Килограмм/литр</item>
+        <item>Тонн/куб метр</item>
+        <item>Фунт/куб фут</item>
+    </string-array>
+
+    <!-- Area -->
+    <string-array name="area_units">
+        <item>Акр</item>
+        <item>Ар</item>
+        <item>Гектар</item>
+        <item>Километр квадрат</item>
+        <item>Сантиметр квадрат</item>
+        <item>Метр квадрат</item>
+    </string-array>
+
+    <!-- Angle -->
+    <string-array name="angle_units">
+        <item>Градус</item>
+        <item>Радиан</item>
+        <item>Градиан</item>
+        <item>Минут</item>
+        <item>Секунд</item>
+        <item>Бүтэн эргэлт</item>
+    </string-array>
+</resources>
