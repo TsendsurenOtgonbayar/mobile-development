@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
   @override
@@ -8,6 +9,51 @@ class LoginScreen extends StatefulWidget {
 }
 class _LoginScreenState extends State<LoginScreen>{
   bool _obscurePassword=true;
+  final _email=TextEditingController();
+  final _password=TextEditingController();
+  bool _isLoading=false;
+  String? _errorMessage;
+  
+  @override
+  void dispose(){
+      _email.dispose();
+      _password.dispose();
+      super.dispose();
+  }
+
+  Future<void> _submit() async{
+    final email=_email.text.trim();
+    final password= _password.text.trim();
+    if (email.isEmpty || password.isEmpty) {
+      setState(()=>_errorMessager='email esvel password buruu bn');
+      return;
+    }
+    if (password.length<6) {
+      setState(()=> _errorMessage='password n dor hayj 6 temdegt baina');
+      return;
+    }
+    setState((){
+      _isLoading=true;
+      _errorMessage=false;
+    });
+    try {
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+    }on FirebaseAuthException catch(e){
+      setState((){
+          _errorMessage='$e.code';
+      });
+    }catch (e) {
+      setState((){
+          _errorMessage='$e'
+      });
+    }
+    finally{
+      if(mounted) setState(()=>_isLoading=false);
+    }
+  }
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
@@ -17,7 +63,7 @@ class _LoginScreenState extends State<LoginScreen>{
       body: Stack(
         children: [
           Positioned(
-            top: -30,
+            top: -40,
             left: 0,
             right: 0,
             child: SvgPicture.asset(
@@ -64,6 +110,8 @@ class _LoginScreenState extends State<LoginScreen>{
                   ),
                   const SizedBox(height: 300), 
                   TextField(
+                    controller: _email,
+                    keyboardType: TextInputType.emailAddress,
                     decoration: InputDecoration(
                       hintText: 'Enter your email address',
                       filled: true,
@@ -78,6 +126,7 @@ class _LoginScreenState extends State<LoginScreen>{
                   const SizedBox(height: 16),
                   TextField(
                     obscureText: _obscurePassword,
+                    controller: _password,
                     decoration: InputDecoration(
                       hintText: 'Enter your password',
                       filled: true,
@@ -100,15 +149,21 @@ class _LoginScreenState extends State<LoginScreen>{
                       ),
                     ),
                   ),
+                  const SizedBox(height:5),
+                  if (_errorMessage!=null) {
+                    Text(
+                      _errorMessage, style: const TextStyle(color:Colors.red, fontSize: 17),
+                    ),
+                  }
                   const SizedBox(height: 40),
                   GestureDetector(
-                    onTap: () {},
+                    onTap: _isLoading ? null : _submit,
                     child: Container(
                       width: double.infinity,
                       height: 54,
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
-                          colors: [
+                          colors: _isLoading? Colors.grey: [
                             Color(0xFF22C59E), 
                             Color(0xFF438883),
                           ],
@@ -125,7 +180,16 @@ class _LoginScreenState extends State<LoginScreen>{
                         ],
                       ),
                       alignment: Alignment.center,
-                      child: const Text(
+                      child: _isLoading ?
+                      const SizedBox(
+                        height: 17,
+                        width:17,
+                        child: CircularProgressIndicator(
+                          strokeWidth:2,
+                          color: Colors.white,
+                        ),
+                      )
+                      :const Text(
                         'Нэвтрэх',
                         style: TextStyle(
                           color: Colors.white,

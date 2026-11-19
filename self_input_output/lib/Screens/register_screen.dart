@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
 
@@ -9,16 +10,84 @@ class RegisterScreen extends StatefulWidget {
 }
 class _RegisterScreenState extends State<RegisterScreen>{
   bool _obscurePassword=true;
+  final _fullName= TextEditingController();
+  final _email= TextEditingController();
+  final _password= TextEditingController();
+  final _secPassword= TextEditingController();
+  bool _isLoading= false;
+  String? _errorMessage;
+  @override
+  void dispose(){
+    _fullName.dispose();
+    _email.dispose();
+    _password.dispose();
+    _secPassword.dispose();
+    super.dispose();
+  }
+  Future<void> _register() async{ 
+    final FullName= _fullName.text.trim();
+    final email=_email.text.trim();
+    final password= _password.text.trim();
+    final secondPassword= _secPassword.text.trim();
+    if (password!=secondPassword) {
+       setState(()=> _errorMessage='password buruu bn');
+       return;
+    } 
+    if (FullName.isEmpty || email.isEmpty || password.isEmpty) {
+      setState(()=> _errorMessage='Talbaruudaa zuv boglo');
+      return;
+    }
+    if (password.length<6) {
+      setState(()=> _errorMessage='Password 6 temdegt aguulsan baih');
+      return;
+    }
+    setState((){
+      _isLoading=true;
+      _errorMessage=null;
+    });
+    try {
+    final credential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );  
+    final user = credential.user;
+      if (user != null) {
+        // 2. Auth профайл дээр бүтэн нэрийг нь оноох
+        await user.updateDisplayName(fullName);
+        await user.reload();
+
+        // 3. Firestore дээр хэрэглэгчийн баримт (users/{uid}) үүсгэх
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .set({
+          'uid': user.uid,
+          'fullName': fullName,
+          'email': email,
+          'createdAt': FieldValue.serverTimestamp(),
+        });
+        }
+    } on FirebaseAuthException catch(e){
+      
+    }catch (e) {
+    
+    } finally{
+
+    }
+  }
+      
+    
+
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.sizeOf(context); 
+    final size =MediaQuery.sizeOf(context);
 
-    return Scaffold(
+      return Scaffold(
       backgroundColor: Colors.white,
       body: Stack(
         children: [
           Positioned(
-            top: -30,
+            top: -40,
             left: 0,
             right: 0,
             child: SvgPicture.asset(
