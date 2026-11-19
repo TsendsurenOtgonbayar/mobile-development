@@ -25,7 +25,7 @@ class _RegisterScreenState extends State<RegisterScreen>{
     super.dispose();
   }
   Future<void> _register() async{ 
-    final FullName= _fullName.text.trim();
+    final fullName= _fullName.text.trim();
     final email=_email.text.trim();
     final password= _password.text.trim();
     final secondPassword= _secPassword.text.trim();
@@ -33,7 +33,7 @@ class _RegisterScreenState extends State<RegisterScreen>{
        setState(()=> _errorMessage='password buruu bn');
        return;
     } 
-    if (FullName.isEmpty || email.isEmpty || password.isEmpty) {
+    if (fullName.isEmpty || email.isEmpty || password.isEmpty) {
       setState(()=> _errorMessage='Talbaruudaa zuv boglo');
       return;
     }
@@ -52,11 +52,9 @@ class _RegisterScreenState extends State<RegisterScreen>{
       );  
     final user = credential.user;
       if (user != null) {
-        // 2. Auth профайл дээр бүтэн нэрийг нь оноох
         await user.updateDisplayName(fullName);
         await user.reload();
 
-        // 3. Firestore дээр хэрэглэгчийн баримт (users/{uid}) үүсгэх
         await FirebaseFirestore.instance
             .collection('users')
             .doc(user.uid)
@@ -68,16 +66,13 @@ class _RegisterScreenState extends State<RegisterScreen>{
         });
         }
     } on FirebaseAuthException catch(e){
-      
+      setState(()=> _errorMessage='$e.code'); 
     }catch (e) {
-    
+      setState(()=> _errorMessage='$e');
     } finally{
-
+      if (mounted) setState(()=> _isLoading=false);
     }
   }
-      
-    
-
   @override
   Widget build(BuildContext context) {
     final size =MediaQuery.sizeOf(context);
@@ -127,6 +122,7 @@ class _RegisterScreenState extends State<RegisterScreen>{
                   ),
                   const SizedBox(height: 150),
                   TextField(
+                    controller: _fullName,
                     decoration: InputDecoration(
                       hintText: 'Бүтэн нэрээ оруулна уу?',
                       filled: true,
@@ -143,7 +139,7 @@ class _RegisterScreenState extends State<RegisterScreen>{
                   ),
                   const SizedBox(height: 16),
                   TextField(
-                    
+                    controller:_email,
                     decoration: InputDecoration(
                       hintText: 'Имэйлээ оруулна уу?',
                       filled: true,
@@ -161,6 +157,7 @@ class _RegisterScreenState extends State<RegisterScreen>{
                   const SizedBox(height: 16),
                   TextField(
                     obscureText: _obscurePassword,
+                    controller: _password,
                     decoration: InputDecoration(
                       hintText: 'Нууц үгээ оруулаарай',
                       filled: true,
@@ -188,6 +185,7 @@ class _RegisterScreenState extends State<RegisterScreen>{
                   ),
                   const SizedBox(height: 16),
                   TextField(
+                    controller: _secPassword,
                     obscureText: _obscurePassword,
                     decoration: InputDecoration(
                       hintText: 'Нууц үгээ давтан оруулаарай',
@@ -217,17 +215,16 @@ class _RegisterScreenState extends State<RegisterScreen>{
                   const SizedBox(height: 32),
                   GestureDetector(
                     onTap: () {
-                      Navigator.pushNamed(context,'/login');
+                      _isLoading ? null : _register();
+                     // Navigator.pushNamed(context,'/login');
                     },
                     child: Container(
                       width: double.infinity,
                       height: 54,
                       decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [
-                            Color(0xFF22C59E), 
-                            Color(0xFF438883),
-                          ],
+                        gradient:  LinearGradient(
+                          colors: _isLoading? [Colors.grey,Colors.grey]
+                          :[Color(0xFF22C59E), Color(0xFF438883),],
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
                         ),
@@ -241,7 +238,16 @@ class _RegisterScreenState extends State<RegisterScreen>{
                         ],
                       ),
                       alignment: Alignment.center,
-                      child: const Text(
+                      child: _isLoading? 
+                      const SizedBox(
+                        height:17,
+                        width:17,
+                        child: CircularProgressIndicator(
+                          strokeWidth:2,
+                          color: Colors.white,
+                        )
+                      )
+                      :const Text(
                         'Бүртгүүлэх',
                         style: TextStyle(
                           color: Colors.white,

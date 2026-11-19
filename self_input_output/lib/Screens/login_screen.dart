@@ -25,7 +25,7 @@ class _LoginScreenState extends State<LoginScreen>{
     final email=_email.text.trim();
     final password= _password.text.trim();
     if (email.isEmpty || password.isEmpty) {
-      setState(()=>_errorMessager='email esvel password buruu bn');
+      setState(()=>_errorMessage='email esvel password buruu bn');
       return;
     }
     if (password.length<6) {
@@ -34,7 +34,7 @@ class _LoginScreenState extends State<LoginScreen>{
     }
     setState((){
       _isLoading=true;
-      _errorMessage=false;
+      _errorMessage=null;
     });
     try {
       await FirebaseAuth.instance.signInWithEmailAndPassword(
@@ -47,7 +47,7 @@ class _LoginScreenState extends State<LoginScreen>{
       });
     }catch (e) {
       setState((){
-          _errorMessage='$e'
+          _errorMessage='$e';
       });
     }
     finally{
@@ -150,11 +150,12 @@ class _LoginScreenState extends State<LoginScreen>{
                     ),
                   ),
                   const SizedBox(height:5),
-                  if (_errorMessage!=null) {
+                  if (_errorMessage!=null) 
                     Text(
-                      _errorMessage, style: const TextStyle(color:Colors.red, fontSize: 17),
+                      _errorMessage!,
+                      style: const TextStyle(color:Colors.red, fontSize: 17),
                     ),
-                  }
+                  
                   const SizedBox(height: 40),
                   GestureDetector(
                     onTap: _isLoading ? null : _submit,
@@ -162,8 +163,8 @@ class _LoginScreenState extends State<LoginScreen>{
                       width: double.infinity,
                       height: 54,
                       decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: _isLoading? Colors.grey: [
+                        gradient: LinearGradient(
+                          colors: _isLoading? [Colors.grey,Colors.grey]: [
                             Color(0xFF22C59E), 
                             Color(0xFF438883),
                           ],
