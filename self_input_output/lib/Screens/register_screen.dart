@@ -46,11 +46,11 @@ class _RegisterScreenState extends State<RegisterScreen>{
       _errorMessage=null;
     });
     try {
-    final credential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+      final credential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );  
-    final user = credential.user;
+      final user = credential.user;
       if (user != null) {
         await user.updateDisplayName(fullName);
         await user.reload();
@@ -214,10 +214,7 @@ class _RegisterScreenState extends State<RegisterScreen>{
                   ),
                   const SizedBox(height: 32),
                   GestureDetector(
-                    onTap: () {
-                      _isLoading ? null : _register();
-                     // Navigator.pushNamed(context,'/login');
-                    },
+                    onTap: _isLoading ? null : _register(),
                     child: Container(
                       width: double.infinity,
                       height: 54,
@@ -264,7 +261,10 @@ class _RegisterScreenState extends State<RegisterScreen>{
                       const Text('Хэрэглэгчийн эрх байгаа юу? '),
                       TextButton(
                         onPressed: () {
-                          Navigator.pushNamed(context, '/login');
+                          Navigator.pushNamedAndRemoveUntil(
+                            context,
+                            '/login',
+                            (route)=>false;
                         },
                         child: const Text(
                           'Нэвтрэх',

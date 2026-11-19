@@ -163,7 +163,7 @@ class _LoginScreenState extends State<LoginScreen>{
                       width: double.infinity,
                       height: 54,
                       decoration: BoxDecoration(
-                        gradient: LinearGradient(
+                        gradient:  LinearGradient(
                           colors: _isLoading? [Colors.grey,Colors.grey]: [
                             Color(0xFF22C59E), 
                             Color(0xFF438883),
@@ -207,7 +207,10 @@ class _LoginScreenState extends State<LoginScreen>{
                       const Text('Бүртгэлгүй юу? '),
                       TextButton(
                         onPressed: () {
-                          Navigator.pushNamed(context, '/register');
+                          Navigator.pushNamedAndRemoveUntil(
+                            context,
+                            '/register',
+                            (route)=>false,);
                         },
                         child: const Text(
                           'Бүртгүүлэх',

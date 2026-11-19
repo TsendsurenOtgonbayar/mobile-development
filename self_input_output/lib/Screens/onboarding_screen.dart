@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-//import 'login_screen.dart';
 
 class OnboardingScreen extends StatelessWidget {
   const OnboardingScreen({super.key});
@@ -74,7 +73,10 @@ class OnboardingScreen extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16),
             child: GestureDetector(
               onTap: () {
-                  Navigator.pushNamed(context,'/login');
+                  Navigator.pushNamedAndRemoveUntil(
+                    context,
+                    '/login',
+                    (route)=>false,);
                 },
               child: Container(
                 width: double.infinity,
@@ -119,7 +121,10 @@ class OnboardingScreen extends StatelessWidget {
                   ),
                   TextButton(
                     onPressed: () {
-                        Navigator.pushNamed(context,'/register');
+                        Navigator.pushNamedAndRemoveUntil(
+                          context,
+                          '/register',
+                          (route)=>false,);
                       },
                     child: const Text(
                       'Бүртгүүлэх.',
