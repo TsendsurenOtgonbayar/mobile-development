@@ -1,83 +1,81 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+
+import '../services/auth_service.dart';
+import 'auth_widgets.dart';
+
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
 
   @override
-  State<RegisterScreen> createState()=> _RegisterScreenState();
+  State<RegisterScreen> createState() => _RegisterScreenState();
 }
-class _RegisterScreenState extends State<RegisterScreen>{
-  bool _obscurePassword=true;
-  final _fullName= TextEditingController();
-  final _email= TextEditingController();
-  final _password= TextEditingController();
-  final _secPassword= TextEditingController();
-  bool _isLoading= false;
+
+class _RegisterScreenState extends State<RegisterScreen> {
+  final _auth = AuthService();
+  final _fullName = TextEditingController();
+  final _email = TextEditingController();
+  final _password = TextEditingController();
+  final _secPassword = TextEditingController();
+  bool _isLoading = false;
   String? _errorMessage;
+
   @override
-  void dispose(){
+  void dispose() {
     _fullName.dispose();
     _email.dispose();
     _password.dispose();
     _secPassword.dispose();
     super.dispose();
   }
-  Future<void> _register() async{ 
-    final fullName= _fullName.text.trim();
-    final email=_email.text.trim();
-    final password= _password.text.trim();
-    final secondPassword= _secPassword.text.trim();
-    if (password!=secondPassword) {
-       setState(()=> _errorMessage='password buruu bn');
-       return;
-    } 
+
+  Future<void> _register() async {
+    final fullName = _fullName.text.trim();
+    final email = _email.text.trim();
+    final password = _password.text.trim();
+    final secondPassword = _secPassword.text.trim();
+
     if (fullName.isEmpty || email.isEmpty || password.isEmpty) {
-      setState(()=> _errorMessage='Talbaruudaa zuv boglo');
+      setState(() => _errorMessage = 'Талбаруудаа бүрэн бөглөнө үү');
       return;
     }
-    if (password.length<6) {
-      setState(()=> _errorMessage='Password 6 temdegt aguulsan baih');
+    if (password.length < 8) {
+      setState(() => _errorMessage = 'Нууц үг хамгийн багадаа 8 тэмдэгт байна');
       return;
     }
-    setState((){
-      _isLoading=true;
-      _errorMessage=null;
+    if (password != secondPassword) {
+      setState(() => _errorMessage = 'Нууц үг таарахгүй байна');
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
     });
+
     try {
-      final credential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+      await _auth.register(
+        fullName: fullName,
         email: email,
         password: password,
-      );  
-      final user = credential.user;
-      if (user != null) {
-        await user.updateDisplayName(fullName);
-        await user.reload();
-
-        await FirebaseFirestore.instance
-            .collection('users')
-            .doc(user.uid)
-            .set({
-          'uid': user.uid,
-          'fullName': fullName,
-          'email': email,
-          'createdAt': FieldValue.serverTimestamp(),
-        });
-        }
-    } on FirebaseAuthException catch(e){
-      setState(()=> _errorMessage='$e.code'); 
-    }catch (e) {
-      setState(()=> _errorMessage='$e');
-    } finally{
-      if (mounted) setState(()=> _isLoading=false);
+      );
+      if (!mounted) return;
+      Navigator.pushNamedAndRemoveUntil(context, '/homepage', (route) => false);
+    } on FirebaseAuthException catch (e) {
+      setState(() => _errorMessage = AuthService.errorMessage(e));
+    } catch (e) {
+      setState(() => _errorMessage = '$e');
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
+
   @override
   Widget build(BuildContext context) {
-    final size =MediaQuery.sizeOf(context);
+    final size = MediaQuery.sizeOf(context);
 
-      return Scaffold(
+    return Scaffold(
       backgroundColor: Colors.white,
       body: Stack(
         children: [
@@ -121,138 +119,37 @@ class _RegisterScreenState extends State<RegisterScreen>{
                     style: TextStyle(color: Colors.grey),
                   ),
                   const SizedBox(height: 150),
-                  TextField(
+                  AuthTextField(
                     controller: _fullName,
-                    decoration: InputDecoration(
-                      hintText: 'Бүтэн нэрээ оруулна уу?',
-                      filled: true,
-                      fillColor: Colors.grey.shade100,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        borderSide: BorderSide.none,
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 16,
-                      ),
-                    ),
+                    hint: 'Бүтэн нэрээ оруулна уу',
                   ),
                   const SizedBox(height: 16),
-                  TextField(
-                    controller:_email,
-                    decoration: InputDecoration(
-                      hintText: 'Имэйлээ оруулна уу?',
-                      filled: true,
-                      fillColor: Colors.grey.shade100,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        borderSide: BorderSide.none,
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 16,
-                      ),
-                    ),
+                  AuthTextField(
+                    controller: _email,
+                    hint: 'Имэйлээ оруулна уу',
+                    keyboardType: TextInputType.emailAddress,
                   ),
                   const SizedBox(height: 16),
-                  TextField(
-                    obscureText: _obscurePassword,
+                  PasswordField(
                     controller: _password,
-                    decoration: InputDecoration(
-                      hintText: 'Нууц үгээ оруулаарай',
-                      filled: true,
-                      fillColor: Colors.grey.shade100,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        borderSide: BorderSide.none,
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 16,
-                      ),
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _obscurePassword ? Icons.visibility_off : Icons.visibility,
-                          color: Colors.grey,
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            _obscurePassword = !_obscurePassword;
-                          });
-                        },
-                      ),
-                    ),
+                    hint: 'Нууц үгээ оруулаарай',
                   ),
                   const SizedBox(height: 16),
-                  TextField(
+                  PasswordField(
                     controller: _secPassword,
-                    obscureText: _obscurePassword,
-                    decoration: InputDecoration(
-                      hintText: 'Нууц үгээ давтан оруулаарай',
-                      filled: true,
-                      fillColor: Colors.grey.shade100,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        borderSide: BorderSide.none,
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 16,
-                      ),
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _obscurePassword ? Icons.visibility_off : Icons.visibility,
-                          color: Colors.grey,
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            _obscurePassword = !_obscurePassword;
-                          });
-                        },
-                      ),
-                    ),
+                    hint: 'Нууц үгээ давтан оруулаарай',
                   ),
-                  const SizedBox(height: 32),
-                  GestureDetector(
-                    onTap: _isLoading ? null : _register(),
-                    child: Container(
-                      width: double.infinity,
-                      height: 54,
-                      decoration: BoxDecoration(
-                        gradient:  LinearGradient(
-                          colors: _isLoading? [Colors.grey,Colors.grey]
-                          :[Color(0xFF22C59E), Color(0xFF438883),],
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                        ),
-                        borderRadius: BorderRadius.circular(25),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFF438883).withOpacity(0.4),
-                            blurRadius: 25,
-                            offset: const Offset(0, 50),
-                          ),
-                        ],
-                      ),
-                      alignment: Alignment.center,
-                      child: _isLoading? 
-                      const SizedBox(
-                        height:17,
-                        width:17,
-                        child: CircularProgressIndicator(
-                          strokeWidth:2,
-                          color: Colors.white,
-                        )
-                      )
-                      :const Text(
-                        'Бүртгүүлэх',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 17,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                  const SizedBox(height: 8),
+                  if (_errorMessage != null)
+                    Text(
+                      _errorMessage!,
+                      style: const TextStyle(color: Colors.red, fontSize: 15),
                     ),
+                  const SizedBox(height: 24),
+                  GradientButton(
+                    text: 'Бүртгүүлэх',
+                    isLoading: _isLoading,
+                    onTap: _register,
                   ),
                   const SizedBox(height: 16),
                   Row(
@@ -260,12 +157,11 @@ class _RegisterScreenState extends State<RegisterScreen>{
                     children: [
                       const Text('Хэрэглэгчийн эрх байгаа юу? '),
                       TextButton(
-                        onPressed: () {
-                          Navigator.pushNamedAndRemoveUntil(
-                            context,
-                            '/login',
-                            (route)=>false;
-                        },
+                        onPressed: () => Navigator.pushNamedAndRemoveUntil(
+                          context,
+                          '/login',
+                          (route) => false,
+                        ),
                         child: const Text(
                           'Нэвтрэх',
                           style: TextStyle(

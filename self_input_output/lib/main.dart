@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'firebase_options.dart';
 import 'screens/splash_screen.dart';
 import 'screens/onboarding_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
-import 'screens/homepage.dart';
+import 'screens/main_page.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   try{
@@ -13,9 +14,9 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
   }on FirebaseAuthException catch(e){
-    print("firebase: $e.code");
+    print("firebase: ${e.code}");
   }catch(e){
-    print("aldaa $e")
+    print("aldaa $e");
   }
 
   runApp(const MyApp());
@@ -39,7 +40,7 @@ class MyApp extends StatelessWidget {
         '/auth': (context)=> const AuthGate(),
         '/login': (context) => const LoginScreen(),
         '/register': (context) => const RegisterScreen(),
-        '/homepage':(context)=> const HomePageScreen(),
+        '/homepage':(context)=> const MainPage(),
       },
     );
   }
@@ -65,7 +66,7 @@ class AuthGate extends StatelessWidget {
         }
         // 3. Хэрэглэгч нэвтэрсэн байвал HomeScreen
         if (snapshot.hasData && snapshot.data != null) {
-          //return const HomeScreen();
+          return const MainPage();
         }
         // 4. Нэвтрээгүй бол LoginScreen
         return const OnboardingScreen();

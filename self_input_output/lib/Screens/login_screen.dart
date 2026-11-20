@@ -1,62 +1,61 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+
+import '../services/auth_service.dart';
+import 'auth_widgets.dart';
+
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
+
   @override
-  State<LoginScreen> createState()=> _LoginScreenState();
+  State<LoginScreen> createState() => _LoginScreenState();
 }
-class _LoginScreenState extends State<LoginScreen>{
-  bool _obscurePassword=true;
-  final _email=TextEditingController();
-  final _password=TextEditingController();
-  bool _isLoading=false;
+
+class _LoginScreenState extends State<LoginScreen> {
+  final _auth = AuthService();
+  final _email = TextEditingController();
+  final _password = TextEditingController();
+  bool _isLoading = false;
   String? _errorMessage;
-  
+
   @override
-  void dispose(){
-      _email.dispose();
-      _password.dispose();
-      super.dispose();
+  void dispose() {
+    _email.dispose();
+    _password.dispose();
+    super.dispose();
   }
 
-  Future<void> _submit() async{
-    final email=_email.text.trim();
-    final password= _password.text.trim();
+  Future<void> _submit() async {
+    final email = _email.text.trim();
+    final password = _password.text.trim();
+
     if (email.isEmpty || password.isEmpty) {
-      setState(()=>_errorMessage='email esvel password buruu bn');
+      setState(() => _errorMessage = 'Имэйл болон нууц үгээ оруулна уу');
       return;
     }
-    if (password.length<6) {
-      setState(()=> _errorMessage='password n dor hayj 6 temdegt baina');
-      return;
-    }
-    setState((){
-      _isLoading=true;
-      _errorMessage=null;
+
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
     });
+
     try {
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-    }on FirebaseAuthException catch(e){
-      setState((){
-          _errorMessage='$e.code';
-      });
-    }catch (e) {
-      setState((){
-          _errorMessage='$e';
-      });
-    }
-    finally{
-      if(mounted) setState(()=>_isLoading=false);
+      await _auth.signIn(email: email, password: password);
+      if (!mounted) return;
+      Navigator.pushNamedAndRemoveUntil(context, '/homepage', (route) => false);
+    } on FirebaseAuthException catch (e) {
+      setState(() => _errorMessage = AuthService.errorMessage(e));
+    } catch (e) {
+      setState(() => _errorMessage = '$e');
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
+
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
+    final size = MediaQuery.sizeOf(context);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -69,28 +68,25 @@ class _LoginScreenState extends State<LoginScreen>{
             child: SvgPicture.asset(
               'assets/image/header.svg',
               width: size.width,
-              height: 320, 
+              height: 320,
             ),
           ),
           Positioned(
-            top:0,
-            left:0,
+            top: 0,
+            left: 0,
             child: Image.asset(
               'assets/image/under_header.png',
-              width:150,
-              height:150,
-            )
+              width: 150,
+              height: 150,
+            ),
           ),
           Positioned(
             top: 150,
-            right:50,
-            child: Align(
-              alignment: Alignment.center,
-              child: Image.asset(
-                'assets/image/header_logo.png',
-                width:250,
-                height:250,
-              ),
+            right: 50,
+            child: Image.asset(
+              'assets/image/header_logo.png',
+              width: 250,
+              height: 250,
             ),
           ),
           SafeArea(
@@ -108,97 +104,28 @@ class _LoginScreenState extends State<LoginScreen>{
                       color: Colors.white,
                     ),
                   ),
-                  const SizedBox(height: 300), 
-                  TextField(
+                  const SizedBox(height: 300),
+                  AuthTextField(
                     controller: _email,
+                    hint: 'Имэйлээ оруулна уу',
                     keyboardType: TextInputType.emailAddress,
-                    decoration: InputDecoration(
-                      hintText: 'Enter your email address',
-                      filled: true,
-                      fillColor: Colors.grey.shade100,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        borderSide: BorderSide.none,
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                    ),
                   ),
                   const SizedBox(height: 16),
-                  TextField(
-                    obscureText: _obscurePassword,
+                  PasswordField(
                     controller: _password,
-                    decoration: InputDecoration(
-                      hintText: 'Enter your password',
-                      filled: true,
-                      fillColor: Colors.grey.shade100,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        borderSide: BorderSide.none,
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                      suffixIcon: IconButton(
-                      icon: Icon(
-                        _obscurePassword ? Icons.visibility_off : Icons.visibility,
-                        color: Colors.grey,
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          _obscurePassword = !_obscurePassword;
-                        });
-                      },
-                      ),
-                    ),
+                    hint: 'Нууц үгээ оруулна уу',
                   ),
-                  const SizedBox(height:5),
-                  if (_errorMessage!=null) 
+                  const SizedBox(height: 8),
+                  if (_errorMessage != null)
                     Text(
                       _errorMessage!,
-                      style: const TextStyle(color:Colors.red, fontSize: 17),
+                      style: const TextStyle(color: Colors.red, fontSize: 15),
                     ),
-                  
-                  const SizedBox(height: 40),
-                  GestureDetector(
-                    onTap: _isLoading ? null : _submit,
-                    child: Container(
-                      width: double.infinity,
-                      height: 54,
-                      decoration: BoxDecoration(
-                        gradient:  LinearGradient(
-                          colors: _isLoading? [Colors.grey,Colors.grey]: [
-                            Color(0xFF22C59E), 
-                            Color(0xFF438883),
-                          ],
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                        ),
-                        borderRadius: BorderRadius.circular(25),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFF438883).withOpacity(0.4),
-                            blurRadius: 25,
-                            offset: const Offset(0, 60),
-                          ),
-                        ],
-                      ),
-                      alignment: Alignment.center,
-                      child: _isLoading ?
-                      const SizedBox(
-                        height: 17,
-                        width:17,
-                        child: CircularProgressIndicator(
-                          strokeWidth:2,
-                          color: Colors.white,
-                        ),
-                      )
-                      :const Text(
-                        'Нэвтрэх',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 17,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
+                  const SizedBox(height: 32),
+                  GradientButton(
+                    text: 'Нэвтрэх',
+                    isLoading: _isLoading,
+                    onTap: _submit,
                   ),
                   const SizedBox(height: 16),
                   Row(
@@ -206,12 +133,11 @@ class _LoginScreenState extends State<LoginScreen>{
                     children: [
                       const Text('Бүртгэлгүй юу? '),
                       TextButton(
-                        onPressed: () {
-                          Navigator.pushNamedAndRemoveUntil(
-                            context,
-                            '/register',
-                            (route)=>false,);
-                        },
+                        onPressed: () => Navigator.pushNamedAndRemoveUntil(
+                          context,
+                          '/register',
+                          (route) => false,
+                        ),
                         child: const Text(
                           'Бүртгүүлэх',
                           style: TextStyle(
