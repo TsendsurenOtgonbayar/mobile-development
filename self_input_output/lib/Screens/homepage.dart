@@ -6,7 +6,6 @@ import '../models/transaction_item.dart';
 import '../services/transaction_services.dart';
 import '../utils/formatters.dart';
 import '../services/auth_service.dart';
-// ======================= HomePage =======================
 
 class HomePage extends StatefulWidget {
   final bool hasUnreadNotifications;
@@ -49,7 +48,7 @@ class _HomePageState extends State<HomePage> {
             child: SafeArea(
               bottom: false,
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                padding: const EdgeInsets.fromLTRB(20, 50, 20, 20),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
@@ -75,11 +74,9 @@ class _HomePageState extends State<HomePage> {
                           }
 
                           final items = snapshot.data!;
-                          final income = items
-                              .where((e) => e.isIncome)
+                          final income = items.where((e) => e.isIncome)
                               .fold<double>(0, (s, e) => s + e.amount);
-                          final expense = items
-                              .where((e) => !e.isIncome)
+                          final expense = items.where((e) => !e.isIncome)
                               .fold<double>(0, (s, e) => s + e.amount);
 
                           return Column(
@@ -120,7 +117,6 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-// ======================= HomeHeader =======================
 
 class HomeHeader extends StatelessWidget {
   final String userName;
@@ -260,7 +256,7 @@ class BalanceCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      '${formatMoney(balance)}₮',
+                      '\$${formatMoney(balance)}',
                       style: const TextStyle(
                         fontSize: 28,
                         color: Colors.white,
@@ -283,12 +279,12 @@ class BalanceCard extends StatelessWidget {
                 _SummaryItem(
                   icon: Icons.arrow_downward,
                   title: 'Орлого',
-                  amount: '${formatMoney(income)}₮',
+                  amount: '\$${formatMoney(income)}',
                 ),
                 _SummaryItem(
                   icon: Icons.arrow_upward,
                   title: 'Зарлага',
-                  amount: '${formatMoney(expense)}₮',
+                  amount: '\$${formatMoney(expense)}',
                 ),
               ],
             ),

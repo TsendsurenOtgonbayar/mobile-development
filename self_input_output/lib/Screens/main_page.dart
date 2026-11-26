@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'homepage.dart';
 import 'profile_screen.dart';
+import 'wallet_screen.dart';
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
 
@@ -11,16 +12,16 @@ class MainPage extends StatefulWidget {
 class _MainPageState extends State<MainPage> {
   int _currentIndex = 0;
 
-  // Tab бүрийн хуудас (одоохондоо түр Center-ээр)
-  final List<Widget> _pages = const [
-    HomePage(),
-    Center(child: Text('Статистик')),
-    Center(child: Text('Түрийвч')),
-    ProfileScreen(),
-  ];
-
   @override
   Widget build(BuildContext context) {
+    final List<Widget> _pages = [
+      HomePage(),
+      Center(child: Text('Статистик')),
+      WalletScreen(
+        onBack:()=> setState(()=> _currentIndex=0),
+      ),
+      ProfileScreen(),
+  ];
     return Scaffold(
       // IndexedStack нь tab солиход хуудасны төлөв (scroll г.м.) хадгална
       body: IndexedStack(
