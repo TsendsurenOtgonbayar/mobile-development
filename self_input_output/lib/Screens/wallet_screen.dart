@@ -153,7 +153,7 @@ class _WalletScreenState extends State<WalletScreen> {
           wallet: _wallet,
           onDone: () => setState(() {
             _sheetMode = 0;
-            _tabIndex = 1; // Хүлээгдэж буй tab дээр шууд харуулна
+            _tabIndex = 1; 
           }),
         );
       case 0:

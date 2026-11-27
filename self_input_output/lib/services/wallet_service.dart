@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../models/pending_payment.dart';
 import '../models/transaction_item.dart';
-
+import 'pending_payment_service.dart';
 /// Dropdown-д харагдах гүйлгээний төрөл (Netflix, Youtube, Spotify)
 class ExpenseType {
   final String id;
@@ -109,7 +109,6 @@ class WalletService {
 
   // ---------- Төлбөр нэмэх ----------
   // pending-д орсноор "Хүлээгдэж буй гүйлгээ" tab дээр шууд харагдана
-  Future<void> addPending(PendingPayment p) {
-    return _user.collection('pending').add(p.toMap());
-  }
+  Future<void> addPending(PendingPayment p) =>
+    PendingPaymentService(uid).addPending(p);
 }

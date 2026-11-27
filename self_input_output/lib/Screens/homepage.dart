@@ -12,7 +12,7 @@ class HomePage extends StatefulWidget {
   final VoidCallback? onNotificationTap;
   const HomePage({
     super.key,
-    this.hasUnreadNotifications = true,
+    this.hasUnreadNotifications = false,
     this.onNotificationTap,
   });
   @override
