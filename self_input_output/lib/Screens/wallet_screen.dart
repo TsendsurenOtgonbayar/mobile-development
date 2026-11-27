@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
 import '../constants/app_colors.dart';
 import '../models/pending_payment.dart';
@@ -42,10 +43,7 @@ class _WalletScreenState extends State<WalletScreen> {
 
   final Set<String> _payingIds = {};
   int _tabIndex = 0;
-
-  // 0 = Wallet, 1 = Түрийвч цэнэглэх, 2 = Төлбөр нэмэх
   int _sheetMode = 0;
-  // Цэнэглэх дэлгэц доторх tab: 0 = Картууд, 1 = Аккаунт
   int _chargeTab = 0;
 
   String get _title {
@@ -135,7 +133,6 @@ class _WalletScreenState extends State<WalletScreen> {
     );
   }
 
-  // build үед setState дуудахгүй, зөвхөн _sheetMode-оор widget буцаана
   Widget _buildSheet() {
     switch (_sheetMode) {
       case 1:
@@ -156,6 +153,10 @@ class _WalletScreenState extends State<WalletScreen> {
             _tabIndex = 1; 
           }),
         );
+      case 3:
+        
+      case 4:
+
       case 0:
       default:
         return _walletFirstTab();
@@ -288,7 +289,7 @@ class _WalletScreenState extends State<WalletScreen> {
   }
 }
 
-// ======================= Түрийвч цэнэглэх (Картууд / Аккаунт) =======================
+//  Түрийвч цэнэглэх (Картууд / Аккаунт) 
 
 class _ChargeView extends StatefulWidget {
   final WalletService wallet;
@@ -347,8 +348,38 @@ class _ChargeViewState extends State<_ChargeView> {
   }
 
   Future<void> _sendCard() async {
-    if (_name.text.trim().isEmpty || _number.text.trim().isEmpty) {
-      _snack('Картын нэр, дугаараа бөглөнө үү');
+    if (_name.text.trim().isEmpty || _number.text.trim().isEmpty || _number.text.trim().length!=16) {
+      _snack('Картын нэр, дугаараа зөв бөглөнө үү');
+      return;
+    }
+    if (_expiry.text.trim().length!=4) {
+      _snack('4 тоо оруулна уу');
+      return;
+    }
+    final int? YEAR= int.tryParse(_expiry.text.trim().substring(0,2));
+    final int? MONTH= int.tryParse(_expiry.text.trim().substring(4-2));
+    if (YEAR==null || MONTH==null) {
+      _snack('хоосон талбар байж болохгүй');
+      return;
+    }
+    if(MONTH<=1 || MONTH>=12){
+      _snack('MM дээр боломжийн утга оруул');
+      return;
+    }
+    final expYEAR= 2000 + YEAR;
+    final now = DateTime.now();
+    final currentYear = now.year;
+    final currentMonth = now.month;
+
+    if (currentYear>=expYEAR) {
+      _snack('Хугацаа нь дууссан байна');
+      return;
+    }else if(currentYear==expYEAR && currentMonth>=MONTH){
+      _snack('Хугацаа дууссан байна');
+      return;
+    }
+    if (_cvc.text.trim().length!=3) {
+      _snack('CVC 3 оронтой байх ёстой');
       return;
     }
     setState(() => _busy = true);
@@ -471,7 +502,7 @@ class _ChargeViewState extends State<_ChargeView> {
             flex: 3,
             child: TextField(
                 controller: _expiry,
-                decoration: _dec('ДУУСАХ ХУГАЦАА  YYYY/MM')),
+                decoration: _dec('YY/MM')),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -584,7 +615,7 @@ class _CardPreview extends StatelessWidget {
             children: [
               Text('Debit Card',
                   style: TextStyle(color: Colors.white70, fontSize: 11)),
-              Text('Mono',
+              Text('Mongol empire',
                   style: TextStyle(
                       color: Colors.white, fontWeight: FontWeight.w700)),
             ],
@@ -602,7 +633,7 @@ class _CardPreview extends StatelessWidget {
             children: [
               Text(name.isEmpty ? 'CARD HOLDER' : name.toUpperCase(),
                   style: const TextStyle(color: Colors.white, fontSize: 12)),
-              Text(expiry.isEmpty ? 'YYYY/MM' : expiry,
+              Text(expiry.isEmpty ? 'YY/MM' : expiry,
                   style: const TextStyle(color: Colors.white, fontSize: 12)),
             ],
           ),
@@ -612,7 +643,7 @@ class _CardPreview extends StatelessWidget {
   }
 }
 
-// ======================= Төлбөр нэмэх =======================
+// Төлбөр нэмэх 
 
 class _PayView extends StatefulWidget {
   final WalletService wallet;
@@ -635,8 +666,7 @@ class _PayViewState extends State<_PayView> {
   @override
   void initState() {
     super.initState();
-    // Төрлүүд хоосон байвал Netflix, Youtube, Spotify-г нэг удаа үүсгэнэ
-    widget.wallet.seedExpenseTypesIfEmpty();
+      widget.wallet.seedExpenseTypesIfEmpty();
   }
 
   @override
@@ -650,15 +680,19 @@ class _PayViewState extends State<_PayView> {
   }
 
   Future<void> _pickDate() async {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+
     final picked = await showDatePicker(
       context: context,
-      initialDate: _date,
-      firstDate: DateTime(2020),
+      initialDate: _date.isBefore(today) ? today : _date,
+      firstDate: today, 
       lastDate: DateTime(2100),
     );
-    if (picked != null) setState(() => _date = picked);
+    if (picked != null && !picked.isBefore(today)) {
+      setState(() => _date = picked);
+    }
   }
-
   Future<void> _submit() async {
     final type = _selected;
     final amount = double.tryParse(_amount.text.trim().replaceAll(',', '.'));
@@ -818,8 +852,6 @@ class _PayViewState extends State<_PayView> {
     );
   }
 }
-
-// ======================= Нийтлэг жижиг widget-үүд =======================
 
 class _SheetShell extends StatelessWidget {
   final Widget child;
