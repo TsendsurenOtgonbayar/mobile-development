@@ -278,7 +278,6 @@ class StudyViewModel(
         mutableUiState.update {
             it.copy(
                 isSubmitting = true,
-                isAnswerVisible = true,
                 answerInputError = null,
                 actionErrorMessage = null
             )
@@ -308,6 +307,7 @@ class StudyViewModel(
                     it.copy(
                         isSubmitting = false,
                         answerResult = isCorrect,
+                        isAnswerVisible = true,
                         correctCount = it.correctCount +
                                 if (isCorrect) 1 else 0,
                         wrongCount = it.wrongCount +

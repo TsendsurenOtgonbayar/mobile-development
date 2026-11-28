@@ -154,9 +154,13 @@ class _WalletScreenState extends State<WalletScreen> {
           }),
         );
       case 3:
-        
-      case 4:
+        return _BillDetails(// end 
 
+        );
+      case 4:
+        return _BillPayment( // end
+
+        );
       case 0:
       default:
         return _walletFirstTab();
